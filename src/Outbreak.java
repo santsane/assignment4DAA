@@ -16,9 +16,44 @@ public class Outbreak {
      * Do not forget to rebuild the answer (who exactly is tested), not only the cost: the picture needs it.
      * Main calls this twice: with all costs equal to 1 (the line "Tests needed") and with the real costs ("Cheapest testing").
      */
+    static int[] order(int n, int[][] nb, int[] parent) {
+        int[] order = new int[n];
+        boolean[] seen = new boolean[n];
+        int head = 0, tail = 0;
+        order[tail++] = 0;
+        seen[0] = true;
+        parent[0] = -1;
+        while (head < tail) {
+            int v = order[head++];
+            for (int c : nb[v]) {
+                if (!seen[c]) { seen[c] = true; parent[c] = v; order[tail++] = c; }
+            }
+        }
+        return order;
+    }
+
     public static boolean[] cheapestTests(int n, int[][] nb, int[] cost) {
-        // TODO Mission 5a
-        return new boolean[n];
+        int[] parent = new int[n];
+        int[] order = order(n, nb, parent);
+        long[] in = new long[n];   // v is tested
+        long[] out = new long[n];  // v is not tested, so all children must be tested
+        for (int idx = n - 1; idx >= 0; idx--) {
+            int v = order[idx];
+            in[v] += cost[v];
+            int p = parent[v];
+            if (p != -1) {
+                in[p] += Math.min(in[v], out[v]);
+                out[p] += in[v];
+            }
+        }
+        boolean[] tested = new boolean[n];
+        tested[0] = in[0] <= out[0];
+        for (int idx = 1; idx < n; idx++) {
+            int v = order[idx];
+            if (!tested[parent[v]]) tested[v] = true;
+            else tested[v] = in[v] <= out[v];
+        }
+        return tested;
     }
 
     /**

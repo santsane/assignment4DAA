@@ -62,7 +62,21 @@ public class Outbreak {
      * Example: a line 0-1-2-3 has chain 3; a star with centre 0 and leaves 1, 2, 3 has chain 2.
      */
     public static int longestChain(int n, int[][] nb) {
-        // TODO Mission 5b
-        return -1;
+        int[] parent = new int[n];
+        int[] order = order(n, nb, parent);
+        int[] best1 = new int[n]; // longest way down
+        int[] best2 = new int[n]; // second longest way down
+        int answer = 0;
+        for (int idx = n - 1; idx >= 0; idx--) {
+            int v = order[idx];
+            answer = Math.max(answer, best1[v] + best2[v]);
+            int p = parent[v];
+            if (p != -1) {
+                int len = best1[v] + 1;
+                if (len > best1[p]) { best2[p] = best1[p]; best1[p] = len; }
+                else if (len > best2[p]) best2[p] = len;
+            }
+        }
+        return answer;
     }
 }

@@ -54,8 +54,44 @@ public class Marker {
      * can have the same hash.
      * Example: a = "ACGTAC", b = "TTACGT", k = 4: the words of a are ACGT, CGTA, GTAC; only ACGT is in b, so the answer is 1.
      */
+    static final long MOD = 1_000_000_007L;
+    static final long BASE = 131;
+
     public static int sharedWords(String a, String b, int k) {
-        // TODO Mission 4
-        return -1;
+        if (k <= 0 || a.length() < k || b.length() < k) return 0;
+
+        long high = 1; // BASE^(k-1)
+        for (int i = 0; i < k - 1; i++) high = (high * BASE) % MOD;
+
+        // hashes of all windows of b: hash -> start positions
+        HashMap<Long, ArrayList<Integer>> windows = new HashMap<>();
+        long h = 0;
+        for (int i = 0; i < k; i++) h = (h * BASE + b.charAt(i)) % MOD;
+        for (int j = 0; ; j++) {
+            windows.computeIfAbsent(h, x -> new ArrayList<>()).add(j);
+            if (j + k >= b.length()) break;
+            h = (h - b.charAt(j) * high % MOD + MOD) % MOD;
+            h = (h * BASE + b.charAt(j + k)) % MOD;
+        }
+
+        int count = 0;
+        h = 0;
+        for (int i = 0; i < k; i++) h = (h * BASE + a.charAt(i)) % MOD;
+        for (int i = 0; ; i++) {
+            ArrayList<Integer> candidates = windows.get(h);
+            if (candidates != null) {
+                for (int j : candidates) {
+                    boolean same = true; // equal hash is not enough: compare the letters
+                    for (int t = 0; t < k; t++) {
+                        if (a.charAt(i + t) != b.charAt(j + t)) { same = false; break; }
+                    }
+                    if (same) { count++; break; }
+                }
+            }
+            if (i + k >= a.length()) break;
+            h = (h - a.charAt(i) * high % MOD + MOD) % MOD;
+            h = (h * BASE + a.charAt(i + k)) % MOD;
+        }
+        return count;
     }
 }

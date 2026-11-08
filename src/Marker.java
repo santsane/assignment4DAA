@@ -29,8 +29,21 @@ public class Marker {
      * the first one is "First hit" (-1 when there is none).
      */
     public static int[] findAll(String text, String p) {
-        // TODO Mission 3b
-        return new int[0];
+        int m = p.length();
+        if (m == 0 || m > text.length()) return new int[0];
+        int[] pi = prefixFunction(p);
+        int[] buf = new int[text.length()];
+        int count = 0;
+        int k = 0;
+        for (int i = 0; i < text.length(); i++) {
+            while (k > 0 && text.charAt(i) != p.charAt(k)) k = pi[k - 1];
+            if (text.charAt(i) == p.charAt(k)) k++;
+            if (k == m) {
+                buf[count++] = i - m + 1;
+                k = pi[m - 1]; // next match may overlap this one
+            }
+        }
+        return Arrays.copyOf(buf, count);
     }
 
     /**
